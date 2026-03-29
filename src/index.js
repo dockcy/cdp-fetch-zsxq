@@ -161,24 +161,40 @@ async function main() {
   // 1. 连接到 CDP
   console.log('\n[步骤 1] 连接 CDP...');
   
-  // 先列出所有标签页，找已有的 zsxq 页面
-  console.log('[步骤 1a] 检查已有标签页...');
-  const tabs = await listTabs(port);
-  const existingTab = tabs.find(tab => tab.url && tab.url.includes('zsxq.com'));
-  
   let client;
-  
-  if (existingTab) {
-    console.log(`[步骤 1b] 找到已有标签页: ${existingTab.id} - ${existingTab.title}`);
-    const cdp = await createClient(port, existingTab.id);
-    client = cdp.client;
-  } else {
-    console.log(`[步骤 1b] 未找到已有标签页，将打开新页面`);
-    const cdp = await createClient(port);
-    client = cdp.client;
+  try {
+    // 先列出所有标签页，找已有的 zsxq 页面
+    console.log('[步骤 1a] 检查已有标签页...');
+    const tabs = await listTabs(port);
+    const existingTab = tabs.find(tab => tab.url && tab.url.includes('zsxq.com'));
+    
+    if (existingTab) {
+      console.log(`[步骤 1b] 找到已有标签页: ${existingTab.id} - ${existingTab.title}`);
+      const cdp = await createClient(port, existingTab.id);
+      client = cdp.client;
+    } else {
+      console.log(`[步骤 1b] 未找到已有标签页，将打开新页面`);
+      const cdp = await createClient(port);
+      client = cdp.client;
+    }
+    
+    const { Page, Network, Runtime } = client;
+    console.log('[CDP] 连接成功！');
+  } catch (e) {
+    console.error('\n' + '='.repeat(50));
+    console.error('[错误] 无法连接到 Chrome CDP');
+    console.error('='.repeat(50));
+    console.error('\n请确保：');
+    console.error('1. Chrome 已启动并开启了远程调试端口');
+    console.error('2. CDP 端口配置正确（当前配置: ' + port + '）');
+    console.error('\n启动 Chrome 的命令：');
+    console.error('  Linux:   google-chrome --remote-debugging-port=' + port);
+    console.error('  macOS:   /Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=' + port);
+    console.error('  Windows: chrome.exe --remote-debugging-port=' + port);
+    console.error('\n详细说明请参考 README.md');
+    console.error('='.repeat(50));
+    process.exit(1);
   }
-  
-  const { Page, Network, Runtime } = client;
   
   // 2. 创建网络监听器
   console.log('\n[步骤 2] 设置网络监听...');

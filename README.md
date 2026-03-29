@@ -36,21 +36,72 @@ Chrome 浏览器 (用户已登录)
 - **智能停止**：连续 N 次滚动到底部无新请求时自动停止
 - **纯 JSON 输出**：抓取结果保存为 JSON 文件，不涉及数据库
 
-## 停止条件
-
-以下任一条件满足时停止：
-
-1. **连续 N 次滚动到底部无新请求**（默认 5 次）— 核心！没有更多数据了
-2. **滚动次数达到上限**（默认 50 次）— 保命用
-3. **topic 时间早于时间范围**（默认 24 小时）
-
 ## 安装
+
+### 1. 安装依赖
 
 ```bash
 npm install
 ```
 
-## 配置
+### 2. 安装 Chrome 浏览器
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+# 方法一：直接安装
+sudo apt-get update
+sudo apt-get install -y google-chrome-stable
+
+# 方法二：下载 deb 包
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt-get install -f  # 修复依赖问题
+```
+
+#### Linux (CentOS/RHEL)
+
+```bash
+sudo yum install -y google-chrome-stable
+```
+
+#### macOS
+
+```bash
+# 使用 Homebrew
+brew install --cask google-chrome
+
+# 或者下载安装包
+# https://www.google.com/chrome/
+```
+
+#### Windows
+
+```powershell
+# 使用 Chocolatey
+choco install googlechrome -y
+
+# 或者下载安装包
+# https://www.google.com/chrome/
+```
+
+### 3. 启动 Chrome 并开启 CDP
+
+#### Linux/macOS
+
+```bash
+google-chrome --remote-debugging-port=9222
+# 或指定其他端口
+google-chrome --remote-debugging-port=9123
+```
+
+#### Windows
+
+```powershell
+chrome.exe --remote-debugging-port=9222
+```
+
+### 4. 配置 config.json
 
 编辑 `config.json`：
 
@@ -79,20 +130,10 @@ npm install
 }
 ```
 
-### 参数说明
-
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
 | `groupId` | (必填) | 知识星球星球 ID |
 | `cdpPort` | 9222 | Chrome CDP 端口 |
-| `scroll.waitAfterScroll` | 3000 | 滚动到底部后等待 API 完成 (ms) |
-| `scroll.readWaitMin` | 10000 | 阅读等待最小时间 (ms) |
-| `scroll.readWaitMax` | 20000 | 阅读等待最大时间 (ms) |
-| `scroll.maxScrolls` | 50 | 最大滚动到底部次数 |
-| `scroll.noNewRequestThreshold` | 5 | 连续 N 次无新请求时停止 |
-| `fetch.maxTimeHours` | 24 | 抓取时间范围 (小时) |
-| `fetch.urlPattern` | api.zsxq.com | 监听 URL 模式 |
-| `output.outputDir` | /tmp/zsxq-fetched | JSON 文件输出目录 |
 
 ## 使用
 
@@ -104,34 +145,33 @@ node src/index.js
 node src/index.js --config my-config.json
 ```
 
-## Chrome 启动
+## 停止条件
 
-确保 Chrome 已启动并开启远程调试：
+以下任一条件满足时停止：
+
+1. **连续 N 次滚动到底部无新请求**（默认 3 次）— 核心！没有更多数据了
+2. **滚动次数达到上限**（默认 50 次）— 保命用
+3. **topic 时间早于时间范围**（默认 48 小时）
+
+## 常见问题
+
+### Q: 提示 "No inspectable targets"
+
+Chrome 未启动或 CDP 端口配置错误。请确保：
+1. Chrome 已启动并开启调试端口
+2. `config.json` 中的 `cdpPort` 与启动 Chrome 时的端口一致
+
+### Q: 如何查看 Chrome 是否开启了 CDP？
 
 ```bash
-# macOS
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
-
-# Linux
-google-chrome --remote-debugging-port=9222
-
-# Windows
-chrome.exe --remote-debugging-port=9222
+curl http://127.0.0.1:9222/json/version
 ```
 
-## 工作流程
+如果返回 JSON，说明 Chrome CDP 已正确开启。
 
-```
-1. 加载配置文件
-2. 连接 Chrome CDP
-3. 设置网络监听（监听 api.zsxq.com）
-4. 打开知识星球页面（或使用已有标签页）
-5. 滚动到页面底部
-6. 等待 API 请求完成
-7. 如果收到新 API 响应 → 触发阅读等待
-8. 如果连续 N 次都没收到新响应 → 停止
-9. 保存数据到 JSON 文件
-```
+### Q: 已有登录的知识星球标签页
+
+如果 Chrome 已打开知识星球并登录，脚本会自动复用该标签页，无需重新登录。
 
 ## 输出格式
 
@@ -161,10 +201,6 @@ chrome.exe --remote-debugging-port=9222
   ]
 }
 ```
-
-## 依赖
-
-- [chrome-remote-interface](https://www.npmjs.com/package/chrome-remote-interface) - CDP 客户端
 
 ## License
 
