@@ -1,0 +1,16 @@
+{
+  "name": "zsxq-scroll-monitor",
+  "version": "1.0.0",
+  "description": "CDP-based scroll monitor with human-like behavior for 知识星球",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:zsxq": "node src/index.js --config config.json"
+  },
+  "dependencies": {
+    "chrome-remote-interface": "^0.34.0"
+  },
+  "keywords": ["cdp", "chrome", "scroll", "monitor", "zsxq", "zhishixingqiu"],
+  "author": "",
+  "license": "MIT"
+}

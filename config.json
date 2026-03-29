@@ -1,0 +1,22 @@
+{
+  "groupId": "YOUR_GROUP_ID",
+  "cdpPort": 9222,
+  
+  "scroll": {
+    "waitAfterScroll": 3000,
+    "readWaitMin": 10000,
+    "readWaitMax": 20000,
+    "maxScrolls": 50,
+    "noNewRequestThreshold": 3
+  },
+  
+  "fetch": {
+    "urlPattern": "api.zsxq.com",
+    "maxTimeHours": 48
+  },
+  
+  "output": {
+    "saveToFile": true,
+    "outputDir": "./output"
+  }
+}
